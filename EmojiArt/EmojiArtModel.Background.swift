@@ -9,7 +9,8 @@ import Foundation
 
 extension EmojiArtModel{
     
-    enum Background: Equatable{
+    // No need to implement encode & decode like the course while using swift 5.5
+    enum Background: Equatable, Codable{
         case blank
         case url(URL)
         case imageData(Data)
