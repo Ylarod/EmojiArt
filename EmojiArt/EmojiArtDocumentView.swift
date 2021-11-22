@@ -11,13 +11,26 @@ struct EmojiArtDocumentView: View {
     
     @ObservedObject var document: EmojiArtDocument
     
+    @EnvironmentObject var store: PaletteStore
+    
     let defaultEmojiFontSize: CGFloat = 40
     
     var body: some View {
         VStack{
             documentBody
-            palette
+            PaletteChooser(emojiFontSize: defaultEmojiFontSize)
         }
+    }
+    
+    @State private var alertToShow: IdentifiableAlert?
+    
+    private func showBackgroundImageFetchFailedAlert(_ url: URL){
+        alertToShow = IdentifiableAlert(id: "fetch failed:" + url.absoluteString, alert: {
+            Alert(
+                title: Text("Background Image Fetch"),
+                message: Text("Couldn't load image from \(url)"),
+                dismissButton: .default(Text("OK")))
+        })
     }
     
     var documentBody: some View{
@@ -46,6 +59,17 @@ struct EmojiArtDocumentView: View {
                 return drop(providers: providers, at: location, in: geometry)
             }
             .gesture(panGesture().simultaneously(with: zoomGesture()))
+            .alert(item: $alertToShow) { alertToShow in
+                alertToShow.alert()
+            }
+            .onChange(of: document.backgroundImageFetchStatus) { status in
+                switch status{
+                case .failed(let url):
+                        showBackgroundImageFetchFailedAlert(url)
+                default:
+                    break
+                }
+            }
         }
     }
     
@@ -149,43 +173,7 @@ struct EmojiArtDocumentView: View {
             steadyStateZoomScale = min(hZoom, vZoom)
         }
     }
-    
-    var palette: some View{
-        ScrollingEmojiView(emojis: testEmojis)
-            .font(.system(size: defaultEmojiFontSize))
-    }
-    
-    let testEmojis = "😀😃😄😁😆😅😂🤣🥲☺️😊😇🙂🙃"
 }
-
-struct ScrollingEmojiView: View{
-    let emojis: String
-    
-    var body: some View{
-        ScrollView(.horizontal){
-            HStack{
-                ForEach(emojis.map { String($0) }, id: \.self){ emoji in
-                    Text(emoji)
-                        .onDrag { NSItemProvider(object: emoji as NSString) }
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
