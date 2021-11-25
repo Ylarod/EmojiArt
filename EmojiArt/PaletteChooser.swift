@@ -13,7 +13,8 @@ struct PaletteChooser: View {
     
     @EnvironmentObject var store: PaletteStore
     
-    @State private var chosenPaletteIndex = 0
+    @SceneStorage("PaletteChooser.chosenPaletteIndex")
+    private var chosenPaletteIndex = 0
     
     var body: some View {
         HStack{
@@ -103,7 +104,7 @@ struct ScrollingEmojiView: View{
     var body: some View{
         ScrollView(.horizontal){
             HStack{
-                ForEach(emojis.withNoRepeatedCharacters.map { String($0) }, id: \.self){ emoji in
+                ForEach(emojis.removingDuplicateCharacters.map { String($0) }, id: \.self){ emoji in
                     Text(emoji)
                         .onDrag { NSItemProvider(object: emoji as NSString) }
                 }
